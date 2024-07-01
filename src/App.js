@@ -47,11 +47,40 @@ function Form({ onAddItems }) {
     </form>
   );
 }
-function PackingList({ items, onDeleteItem, onToggleItem }) {
+function PackingList({ items, onDeleteItem, onToggleItem, onClearList }) {
+  const [sortBy, setSortBy] = useState("input");
+  // let sortedItems;
+  // sort items using if statement
+  // if (sortBy === "input") sortedItems = items;
+  // if (sortBy === "description")
+  //   sortedItems = items
+  //     .slice()
+  //     .sort((a, b) => a.description.localeCompare(b.description));
+  // if (sortBy === "packed")
+  //   sortedItems = items
+  //     .slice()
+  //     .sort((a, b) => Number(a.packed) - Number(b.packed));
+  // OR
+  // if(sortBy==="packed") sortedItems = items.filter(item=>item.packed)
+  // sort items using switch case statement
+  let sortedItems = (() => {
+    switch (sortBy) {
+      case "description":
+        return [...items].sort((a, b) =>
+          a.description.localeCompare(b.description)
+        );
+      case "packed":
+        return [...items].sort((a, b) => Number(a.packed) - Number(b.packed));
+      case "input":
+      default:
+        return items;
+    }
+  })();
+
   return (
     <div className="list">
       <ul>
-        {items.map((item) => (
+        {sortedItems.map((item) => (
           <Item
             item={item}
             key={item.id}
@@ -60,6 +89,16 @@ function PackingList({ items, onDeleteItem, onToggleItem }) {
           />
         ))}
       </ul>
+      <div className="actions">
+        <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+          <option value="input">Sort by input orders</option>
+          <option value="description">Sort by description</option>
+          <option value="packed">Sort by packed status</option>
+        </select>
+        {items.length ? (
+          <button onClick={onClearList}>Clear list</button>
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -120,6 +159,13 @@ function App() {
       )
     );
   }
+  function handleClearItems() {
+    if (!items.length) return;
+    const confirmed = window.confirm(
+      "Are you sure you want to delete all items"
+    );
+    if (confirmed) setItems([]);
+  }
   return (
     <div className="app">
       <Logo />
@@ -128,6 +174,7 @@ function App() {
         items={items}
         onDeleteItem={handleDeleteItem}
         onToggleItem={handleToggleItem}
+        onClearList={handleClearItems}
       />
       <Stats items={items} />
     </div>
